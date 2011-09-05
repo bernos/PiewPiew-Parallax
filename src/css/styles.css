@@ -1,0 +1,40 @@
+
+body {
+  padding:0;
+  margin:0;
+}
+
+#container {
+  width:100%;
+  height:760px;
+  overflow:hidden;
+  position:absolute;
+}
+
+#background {
+  background:url(../img/bg.jpg);
+  position:absolute;
+  width:1280px;
+  height:800px;
+}
+
+.parallax-sprite {
+  position:absolute;
+}
+
+.page {
+  position:absolute;
+  width:960px;
+}
+
+.page-one {
+  margin-left:100px;
+}
+
+.page-two {
+  margin-left:1060px;
+}
+
+.page-three {
+  margin-left:2020px;
+}
