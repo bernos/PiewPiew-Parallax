@@ -1,6 +1,20 @@
 (function(global){
+  /**
+   * Creates a new parallax engine.
+   *
+   * @param {Object} settings
+   *  Settings for the parallax engine. Valid settings properties are
+   *  - sprites {Array} An array of sprite objects for the engine to manage.
+   *    Each sprite is an object literal of the form 
+   *    {selector: "#mydiv", speed 1.5}
+   *
+   */
   global.parallaxEngine = function(settings) {
-
+    
+    /**
+     * Initialise the array of sprites. Either use the array specified in the
+     * settings array, or define a new, empty array.
+     */
     var sprites = settings.sprites || [];
  
     for (var i = 0, max = sprites.length; i < max; i++) {
@@ -102,6 +116,8 @@
     var engine = {
       scrollBy : scrollBy
     }
+
+
 
     return engine;
   }
