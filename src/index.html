@@ -48,20 +48,16 @@
       </div>
     </div>
 
-    <img src="img/globemaster.png" id="globemaster" class="parallax-sprite"></div>
-
   </div>
 
 
   <!-- JavaScript at the bottom for fast page loading -->
 
-  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.3/jquery.min.js"></script>
-  <script>window.jQuery || document.write('<script src="js/libs/jquery-1.6.3.min.js"><\/script>')</script>
-
-
-  <script defer src="js/plugins.js"></script>
-  <script defer src="js/script.js"></script>
+  <!-- 
+    We'll use require.js to manage javascript dependencies and modules etc... 
+    See http://requirejs.org/ for details.
+  -->
+  <script type="text/javascript" data-main="scripts/main" src="scripts/require.min.js"></script>
   <!-- end scripts -->
   </body>
 </html>
