@@ -1,4 +1,5 @@
 define(["require", "exports"], function(require, exports){
+
   /**
    * Creates a new parallax engine.
    *
@@ -7,37 +8,39 @@ define(["require", "exports"], function(require, exports){
    *  - sprites {Array} An array of sprite objects for the engine to manage.
    *    Each sprite is an object literal of the form 
    *    {selector: "#mydiv", speed 1.5}
-   *
+   * @return {Object}
+   *  A parallax engine object
    */
   exports.parallaxEngine = function(settings) {
     
     /**
-     * Initialise the array of sprites. Either use the array specified in the
-     * settings array, or define a new, empty array.
+     * Storage for sprites
      */
-    var sprites = settings.sprites || [];
- 
-    for (var i = 0, max = sprites.length; i < max; i++) {
-      sprites[i].$el = $(sprites[i].selector);
-      sprites[i].x   = sprites[i].$el.position().left;
-      sprites[i].y   = sprites[i].$el.position().top;
+    var sprites = [];
+
+    var sx; // tracks current x pos for touch events
+    var dx; // diff between current and previous touch events
+    var st; // tracks time of last touch event
+    var dt; // tracks time between previous two touch events
+    var cancelTimeout = true;
+    var mouseDown     = false;
+
+    /**
+     * Initialise the array of sprites.
+     */
+    if (settings.sprites) {
+      addSprites(settings.sprites);
+      /*for (var i = 0, max = settings.sprites.length; i < max; i++) {
+        this.addSprite(settings.sprites[i]);
+      }  */
     }
-    
+ 
     // Init the touchTarget, if there is one...
     if (settings.touchTarget && $(settings.touchTarget).length) {
-
-      var sx; // tracks current x pos for touch events
-      var dx; // diff between current and previous touch events
-      var st; // tracks time of last touch event
-      var dt; // tracks time between previous two touch events
-      var cancelTimeout = true;
-      var mouseDown     = false;
-
 
       var $touchTarget = $(settings.touchTarget);
 
       $touchTarget.mousedown(function(e) {
-        console.log(e);
         cancelTimeout = true;
         mouseDown     = true;
 
@@ -79,12 +82,6 @@ define(["require", "exports"], function(require, exports){
         if (mouseDown) {
           dx = e.pageX - sx;
           dt = new Date().getTime() - st;
-/*
-          for(var i = 0, max = sprites.length; i < max; i++) {            
-            sprites[i].x += (dx*sprites[i].speed);
-            //sprites[i].$el.attr("style", "-webkit-transform:translate3d("+sprites[i].x+"px, 0, 0)");
-            sprites[i].$el.animate()
-          }*/
 
           scrollBy(dx, 0, 0);
 
@@ -137,12 +134,6 @@ define(["require", "exports"], function(require, exports){
 
             dx = t.pageX - sx;
             dt = new Date().getTime() - st;
-/*
-            for(var i = 0, max = sprites.length; i < max; i++) {            
-              sprites[i].x += (dx*sprites[i].speed);
-              //sprites[i].$el.attr("style", "-webkit-transform:translate3d("+sprites[i].x+"px, 0, 0)");
-              sprites[i].$el.animate()
-            }*/
 
             scrollBy(dx, 0, 0);
 
@@ -153,6 +144,17 @@ define(["require", "exports"], function(require, exports){
         };
       });
     } 
+
+    function addSprites(newSprites) {
+      for (var i = 0, m = newSprites.length; i < m; i++) {
+        newSprites[i].$el = $(newSprites[i].selector);
+        newSprites[i].x   = newSprites[i].$el.position().left;
+        newSprites[i].y   = newSprites[i].$el.position().top;
+
+        sprites.push(newSprites[i]);  
+      }      
+    }
+    
 
     function scrollBy(dx, dy, duration) {
       for(var i = 0, max = sprites.length; i < max; i++) {
@@ -174,9 +176,12 @@ define(["require", "exports"], function(require, exports){
     }
 
     var engine = {
-      scrollBy : scrollBy
+      scrollBy : scrollBy,
+      addSprites : addSprites
     }
 
     return engine;
   }
+
+  
 });
