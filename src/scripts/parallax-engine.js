@@ -22,128 +22,138 @@ define(["require", "exports"], function(require, exports){
     var dx; // diff between current and previous touch events
     var st; // tracks time of last touch event
     var dt; // tracks time between previous two touch events
+    var r = 0.95;  // rate of deceleration on drag end
     var cancelTimeout = true;
     var mouseDown     = false;
 
-    /**
-     * Initialise the array of sprites.
-     */
-    if (settings.sprites) {
-      addSprites(settings.sprites);
-      /*for (var i = 0, max = settings.sprites.length; i < max; i++) {
-        this.addSprite(settings.sprites[i]);
-      }  */
+    function initMouseDragEvents($target) {
+      $target.each(function(){
+        $(this).mousedown(onMouseDragStart);
+        $(this).mousemove(onMouseDragMove);
+        $(this).mouseup(onMouseDragEnd);  
+      });  
     }
- 
-    // Init the touchTarget, if there is one...
-    if (settings.touchTarget && $(settings.touchTarget).length) {
 
-      var $touchTarget = $(settings.touchTarget);
+    function onMouseDragStart(e) {
+      cancelTimeout = true;
+      mouseDown     = true;
 
-      $touchTarget.mousedown(function(e) {
-        cancelTimeout = true;
-        mouseDown     = true;
+      sx = e.pageX;
+      st = new Date().getTime();
 
-        sx = e.pageX;
-        st = new Date().getTime();
+      e.preventDefault();
+    }
 
-        e.preventDefault();
-      });
+    function onMouseDragEnd(e) {
+      cancelTimeout = false;
+      mouseDown     = false;
 
-      $touchTarget.mouseup(function(e) {
-        
-        cancelTimeout = false;
-        mouseDown     = false;
+      var ddx = 1;    // instantaneous deceleration
+  
+      var step = function() {
+        if (!cancelTimeout) {
+          dx *= ddx;
+          ddx *= r;
 
-        var ddx = 1;    // instantaneous deceleration
-        var r   = 0.95; // rate of change of deceleration
-
-        var step = function() {
-          if (!cancelTimeout) {
-            dx *= ddx;
-            ddx *= r;
-
-            if (Math.abs(dx) > 0.5) {
-              scrollBy(dx, 0, 0);
-              setTimeout(step, 30);
-            } else {
-              dx = 0;
-            }
-          }
-        }
-
-        step();
-
-        e.preventDefault();
-      });
-
-      $touchTarget.mousemove(function(e) {
-
-        if (mouseDown) {
-          dx = e.pageX - sx;
-          dt = new Date().getTime() - st;
-
-          scrollBy(dx, 0, 0);
-
-          sx += dx;
-          st += dt;
-
-          e.preventDefault();
-        }
-      });
-
-      $touchTarget.each(function(){
-        this.ontouchstart = function(e) {
-          cancelTimeout = true;
-
-          if (e.touches.length == 1) {
-            var t = e.touches[0];
-
-            sx = t.pageX;
-            st = new Date().getTime();
-          }
-        };
-
-        this.ontouchend = function(e) {
-          cancelTimeout = false;
-
-          var ddx = 1;    // instantaneous deceleration
-          var r   = 0.95; // rate of change of deceleration
-
-          var step = function() {
-            if (!cancelTimeout) {
-              dx *= ddx;
-              ddx *= r;
-
-              if (Math.abs(dx) > 0.5) {
-                scrollBy(dx, 0, 0);
-                setTimeout(step, 30);
-              } else {
-                dx = 0;
-              }
-            }
-          }
-
-          step();
-
-        };
-
-        this.ontouchmove = function(e) {
-          if (e.touches.length == 1) {
-            var t = e.touches[0];
-
-            dx = t.pageX - sx;
-            dt = new Date().getTime() - st;
-
+          if (Math.abs(dx) > 0.5) {
             scrollBy(dx, 0, 0);
-
-            sx += dx;
-            st += dt;
+            setTimeout(step, 30);
+          } else {
+            dx = 0;
           }
-          e.preventDefault();
-        };
+        }
+      }
+
+      step();
+
+      e.preventDefault();
+    }
+
+    function onMouseDragMove(e) {
+      if (mouseDown) {
+        dx = e.pageX - sx;
+        dt = new Date().getTime() - st;
+
+        scrollBy(dx, 0, 0);
+
+        sx += dx;
+        st += dt;
+
+        e.preventDefault();
+      }
+    }
+
+    function onTouchDragStart(e) {
+      cancelTimeout = true;
+
+      if (e.touches.length == 1) {
+        var t = e.touches[0];
+
+        sx = t.pageX;
+        st = new Date().getTime();
+      }
+    }
+
+    function onTouchDragEnd(e) {
+      cancelTimeout = false;
+
+      var ddx = 1;    // instantaneous deceleration
+
+      var step = function() {
+        if (!cancelTimeout) {
+          dx *= ddx;
+          ddx *= r;
+
+          if (Math.abs(dx) > 0.5) {
+            scrollBy(dx, 0, 0);
+            setTimeout(step, 30);
+          } else {
+            dx = 0;
+          }
+        }
+      }
+
+      step();
+
+    }
+
+    function onTouchDragMove(e) {
+      if (e.touches.length == 1) {
+        var t = e.touches[0];
+
+        dx = t.pageX - sx;
+        dt = new Date().getTime() - st;
+
+        scrollBy(dx, 0, 0);
+
+        sx += dx;
+        st += dt;
+      }
+      e.preventDefault();
+    }
+    
+    function initTouchDragEvents($target) {
+      $target.each(function(){
+        this.ontouchstart = onTouchDragStart;
+        this.ontouchmove = onTouchDragMove;
+        this.ontouchend = onTouchDragEnd;
       });
-    } 
+    }
+    
+    function initWithSettings(settings) {
+      if (settings.sprites) {
+        addSprites(settings.sprites);
+      }
+   
+      // Init the touchTarget, if there is one...
+      if (settings.touchTarget && $(settings.touchTarget).length) {
+
+        var $touchTarget = $(settings.touchTarget);
+        
+        initMouseDragEvents($touchTarget);
+        initTouchDragEvents($touchTarget);
+      } 
+    }
 
     function addSprites(newSprites) {
       for (var i = 0, m = newSprites.length; i < m; i++) {
@@ -155,7 +165,6 @@ define(["require", "exports"], function(require, exports){
       }      
     }
     
-
     function scrollBy(dx, dy, duration) {
       for(var i = 0, max = sprites.length; i < max; i++) {
         sprites[i].x += (dx * sprites[i].speed);
@@ -176,12 +185,13 @@ define(["require", "exports"], function(require, exports){
     }
 
     var engine = {
+      initWithSettings : initWithSettings,
       scrollBy : scrollBy,
       addSprites : addSprites
     }
 
+    engine.initWithSettings(settings);
+
     return engine;
   }
-
-  
 });
